@@ -1,1 +1,1 @@
-// export your entities here
+export 'user_entity.dart';

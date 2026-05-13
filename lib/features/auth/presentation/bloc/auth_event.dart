@@ -1,8 +1,7 @@
-import 'package:daily_finance_manager/core_import.dart';
+abstract class UserEvent {}
 
-abstract class AuthEvent extends Equatable {
-  const AuthEvent();
+class CheckUserEvent extends UserEvent {
+  final String userId;
 
-  @override
-  List<Object?> get props => [];
+  CheckUserEvent(this.userId);
 }

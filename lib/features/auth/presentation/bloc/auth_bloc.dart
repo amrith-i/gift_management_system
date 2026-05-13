@@ -1,8 +1,24 @@
-import 'package:daily_finance_manager/core_import.dart';
+import '../../../../core_import.dart';
 
 @injectable
-class AuthBloc extends Bloc<AuthEvent, AuthState> {
-  AuthBloc() : super(AuthInitial()) {
-    // TODO: register event handlers
+class UserBloc extends Bloc<UserEvent, UserState> {
+  final CheckUserUsecase checkUserUsecase;
+
+  UserBloc(this.checkUserUsecase) : super(UserInitial()) {
+    on<CheckUserEvent>(_checkUser);
+  }
+
+  Future<void> _checkUser(CheckUserEvent event, Emitter<UserState> emit) async {
+    emit(UserLoading());
+
+    final result = await checkUserUsecase(
+      CheckUserParams(userId: event.userId),
+    );
+
+    if (result != null) {
+      emit(UserExists(result));
+    } else {
+      emit(UserNotFound("User ID not found"));
+    }
   }
 }

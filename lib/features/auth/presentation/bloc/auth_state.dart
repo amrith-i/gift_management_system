@@ -1,10 +1,19 @@
-import 'package:daily_finance_manager/core_import.dart';
+import '../../../../core_import.dart';
 
-abstract class AuthState extends Equatable {
-  const AuthState();
+abstract class UserState {}
 
-  @override
-  List<Object?> get props => [];
+class UserInitial extends UserState {}
+
+class UserLoading extends UserState {}
+
+class UserExists extends UserState {
+  final UserEntity user;
+
+  UserExists(this.user);
 }
 
-class AuthInitial extends AuthState {}
+class UserNotFound extends UserState {
+  final String message;
+
+  UserNotFound(this.message);
+}

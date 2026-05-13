@@ -1,9 +1,19 @@
+import '../../../../core_import.dart';
 
-import 'package:daily_finance_manager/core_import.dart';
+@LazySingleton(as: UserRemoteDatasource)
+class UserRemoteDatasourceImpl implements UserRemoteDatasource {
+  final FirebaseFirestore firestore;
 
-@LazySingleton(as: AuthRemoteDatasource)
-class AuthRemoteDatasourceImpl implements AuthRemoteDatasource {
-  final Dio dio;
+  UserRemoteDatasourceImpl(this.firestore);
 
-  AuthRemoteDatasourceImpl(this.dio);
+  @override
+  Future<UserDto?> checkUserExists(String userId) async {
+    final document = await firestore.collection('users').doc(userId).get();
+
+    if (!document.exists) {
+      return null;
+    }
+
+    return UserDto.fromJson(document.data()!);
+  }
 }

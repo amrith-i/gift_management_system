@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
 
     return GlobalKeyboardDismiss(
       child: MaterialApp.router(
-        title: 'Daily Finance Manager',
+        title: 'Qr Gift',
         debugShowCheckedModeBanner: false,
         routerConfig: appRouter.config(
           navigatorObservers: () => [routeObserver],

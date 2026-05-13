@@ -1,4 +1,4 @@
-package com.dailycoll.daily_finance_manager
+package com.qrgift.qr_gift_system
 
 import io.flutter.embedding.android.FlutterActivity
 

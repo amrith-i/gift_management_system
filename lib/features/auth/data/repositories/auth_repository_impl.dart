@@ -1,8 +1,13 @@
-import 'package:daily_finance_manager/core_import.dart';
+import '../../../../core_import.dart';
 
-@LazySingleton(as: AuthRepository)
-class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
-  final AuthRemoteDatasource remote;
+@LazySingleton(as: UserRepository)
+class UserRepositoryImpl implements UserRepository {
+  final UserRemoteDatasource remoteDatasource;
 
-  AuthRepositoryImpl(super.dio, this.remote);
+  UserRepositoryImpl(this.remoteDatasource);
+
+  @override
+  Future<UserEntity?> checkUserExists(String userId) async {
+    return await remoteDatasource.checkUserExists(userId);
+  }
 }
