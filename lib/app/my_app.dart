@@ -20,9 +20,9 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primaryBlue),
           useMaterial3: true,
         ),
-        builder: (context, child) {
-          return EnvBanner(child: child ?? const SizedBox());
-        },
+        // builder: (context, child) {
+        //   return EnvBanner(child: child ?? const SizedBox());
+        // },
       ),
     );
   }
