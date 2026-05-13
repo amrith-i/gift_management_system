@@ -20,12 +20,7 @@ import '../../core/networks/network_checker.dart' as _i614;
 import '../../core/services/network_listener_service.dart' as _i142;
 import '../../core/services/push_notification_service.dart' as _i628;
 import '../../core_import.dart' as _i501;
-import '../../features/admin/admin_home/data/datasources/admin_home_remote_datasource_impl.dart'
-    as _i95;
-import '../../features/admin/admin_home/data/repositories/admin_home_repository_impl.dart'
-    as _i922;
-import '../../features/admin/admin_home/presentation/bloc/admin_home_bloc.dart'
-    as _i619;
+
 import '../../features/auth/data/datasources/auth_remote_datasource_impl.dart'
     as _i1071;
 import '../../features/auth/data/repositories/auth_repository_impl.dart'
@@ -65,7 +60,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => appModule.prefs(),
       preResolve: true,
     );
-    gh.factory<_i619.AdminHomeBloc>(() => _i619.AdminHomeBloc());
+
     gh.factory<_i921.HostBloc>(() => _i921.HostBloc());
     gh.lazySingleton<_i92.AppConfig>(() => appModule.appConfig());
     gh.lazySingleton<_i629.AppRouter>(() => appModule.appRouter());
@@ -108,9 +103,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i501.HostRemoteDatasource>(
       () => _i251.HostRemoteDatasourceImpl(gh<_i501.Dio>()),
     );
-    gh.lazySingleton<_i501.AdminHomeRemoteDatasource>(
-      () => _i95.AdminHomeRemoteDatasourceImpl(gh<_i501.Dio>()),
-    );
+
     gh.lazySingleton<_i501.UserRepository>(
       () => _i153.UserRepositoryImpl(gh<_i501.UserRemoteDatasource>()),
     );
@@ -134,12 +127,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i797.UserBloc>(
       () => _i797.UserBloc(gh<_i501.CheckUserUsecase>()),
     );
-    gh.lazySingleton<_i501.AdminHomeRepository>(
-      () => _i922.AdminHomeRepositoryImpl(
-        gh<_i501.Dio>(),
-        gh<_i501.AdminHomeRemoteDatasource>(),
-      ),
-    );
+
     return this;
   }
 }

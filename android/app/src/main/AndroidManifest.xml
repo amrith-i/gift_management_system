@@ -1,4 +1,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+ 
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    
+    <uses-permission android:name="android.permission.FLASHLIGHT" />
+   
+    
+    
+    <uses-feature 
+        android:name="android.hardware.camera" 
+        android:required="true" />
+    
+    
+    <uses-feature 
+        android:name="android.hardware.camera.autofocus" 
+        android:required="false" />
+    
+    
+    <uses-feature 
+        android:name="android.hardware.sensor.light" 
+        android:required="false" />
+    
+    
     <application
         android:label="qr_gift_system"
         android:name="${applicationName}"

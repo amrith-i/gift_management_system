@@ -1,14 +1,11 @@
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:io';
 import '../../../../core_import.dart';
 
 @RoutePage()
 class GuestPage extends StatefulWidget {
   final String userId;
-
   const GuestPage({super.key, required this.userId});
 
   @override
@@ -17,29 +14,23 @@ class GuestPage extends StatefulWidget {
 
 class _GuestPageState extends State<GuestPage> {
   final GlobalKey _qrKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   Future<void> _shareQrImage(String qrToken) async {
     try {
-      // Capture the QR widget as image
-      final RenderRepaintBoundary boundary =
+      final boundary =
           _qrKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-
       final ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-
       final ByteData? byteData = await image.toByteData(
         format: ui.ImageByteFormat.png,
       );
-
       if (byteData == null) return;
 
-      final Uint8List pngBytes = byteData.buffer.asUint8List();
-
-      // Save to temp file
+      final pngBytes = byteData.buffer.asUint8List();
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/gift_qr.png');
       await file.writeAsBytes(pngBytes);
 
-      // Share the image file
       await Share.shareXFiles(
         [XFile(file.path)],
         text: 'Here is my Gift QR Code! Scan this to redeem the gift.',
@@ -55,6 +46,11 @@ class _GuestPageState extends State<GuestPage> {
     return BlocProvider(
       create: (_) => getIt<GiftBloc>()..add(GetGiftEvent(widget.userId)),
       child: Scaffold(
+        key: _scaffoldKey,
+        backgroundColor: GuestColors.bg,
+
+        drawer: GuestProfileDrawer(userId: widget.userId),
+
         body: SafeArea(
           child: BlocBuilder<GiftBloc, GiftState>(
             builder: (context, state) {
@@ -62,149 +58,157 @@ class _GuestPageState extends State<GuestPage> {
                 return const Center(child: CircularProgressIndicator());
               }
 
+              if (state is GiftError) {
+                return Center(child: Text(state.message));
+              }
+
               if (state is GiftLoaded) {
                 final gift = state.gift;
 
                 return Column(
                   children: [
-                    //--------------------------------
-                    // HEADER
-                    //--------------------------------
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const CircleAvatar(
-                            radius: 24,
-                            child: Icon(Icons.person),
-                          ),
+                    _GuestHeader(
+                      onMenuTap: () => _scaffoldKey.currentState?.openDrawer(),
+                      onLogout: () =>
+                          context.router.replace(const UserIdRoute()),
+                    ),
 
-                          const Text('Guest Gift'),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            SizedBox(height: context.h(mobile: 24)),
 
-                          CircleAvatar(
-                            radius: 24,
-                            child: IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.logout),
+                            Text(
+                              '🎉 ${gift.eventName}',
+                              style: GuestTextStyles.eventName(context),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
 
-                    Text(gift.eventName),
+                            SizedBox(height: context.h(mobile: 8)),
 
-                    const SizedBox(height: 10),
+                            GuestStatusPill(status: gift.status),
 
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 50,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: gift.status == 'locked'
-                            ? Colors.orange
-                            : gift.status == 'unlocked'
-                            ? Colors.green
-                            : Colors.red,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(gift.status.toUpperCase()),
-                    ),
+                            SizedBox(height: context.h(mobile: 32)),
 
-                    const SizedBox(height: 40),
-
-                    Container(
-                      width: 300,
-                      height: 300,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: gift.status == 'redeemed'
-                              ? Colors.red
-                              : Colors.blue,
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: gift.status == 'locked'
-                          ? Scratcher(
-                              brushSize: 50,
-                              threshold: 50,
-                              color: Colors.blue,
-                              onThreshold: () {
-                                context.read<GiftBloc>().add(
-                                  UnlockGiftEvent(
-                                    gift.giftId,
-                                    widget.userId,
-                                  ), // pass userId
-                                );
-                              },
-                              child: const Center(child: Text('Scratch Here')),
-                            )
-                          : gift.status == 'unlocked'
-                          ? RepaintBoundary(
-                              key: _qrKey,
-                              child: Container(
-                                color: Colors.white,
-                                padding: const EdgeInsets.all(16),
-                                child: PrettyQrView.data(data: gift.qrToken),
-                              ),
-                            )
-                          : const Center(
-                              child: Icon(
-                                Icons.error,
-                                size: 100,
-                                color: Colors.red,
+                            Padding(
+                              padding: GuestPadding.screenH(context),
+                              child: ClipRRect(
+                                borderRadius: GuestDecorations.cardRadius(
+                                  context,
+                                ),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  height: context.h(mobile: 320),
+                                  child: _buildCardContent(context, gift),
+                                ),
                               ),
                             ),
-                    ),
 
-                    const SizedBox(height: 30),
+                            SizedBox(height: context.h(mobile: 28)),
 
-                    //--------------------------------
-                    // TEXTS
-                    //--------------------------------
-                    if (gift.status == 'locked') ...[
-                      const Text('A Special Gift Awaits You'),
-                      const SizedBox(height: 10),
-                      const Text('Scratch the card to Unlock Your QRCode'),
-                    ],
+                            // Status text below card
+                            GuestStatusTextSection(status: gift.status),
 
-                    if (gift.status == 'unlocked') ...[
-                      const Text('Share your gifts with QR Code'),
-                      const SizedBox(height: 10),
-                      const Text('Enjoy Your Gift with happily'),
-                    ],
+                            SizedBox(height: context.h(mobile: 32)),
 
-                    if (gift.status == 'redeemed') ...[
-                      const Text('Your Reward Already Redeemed'),
-                    ],
+                            if (gift.status == 'unlocked')
+                              GuestShareButton(
+                                onTap: () => _shareQrImage(gift.qrToken),
+                              ),
 
-                    const SizedBox(height: 30),
-
-                    //--------------------------------
-                    // SHARE BUTTON
-                    //--------------------------------
-                    if (gift.status == 'unlocked')
-                      CircleAvatar(
-                        radius: 30,
-                        child: IconButton(
-                          onPressed: () => _shareQrImage(gift.qrToken),
-                          icon: const Icon(Icons.share),
+                            SizedBox(height: context.h(mobile: 30)),
+                          ],
                         ),
                       ),
+                    ),
                   ],
                 );
-              }
-
-              if (state is GiftError) {
-                return Center(child: Text(state.message));
               }
 
               return const SizedBox();
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCardContent(BuildContext context, gift) {
+    switch (gift.status) {
+      case 'locked':
+        return GuestScratchCard(
+          qrToken: gift.qrToken,
+          giftId: gift.giftId,
+          userId: widget.userId,
+        );
+
+      case 'unlocked':
+        return RepaintBoundary(
+          key: _qrKey,
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: GuestColors.surface,
+            child: Center(
+              child: SizedBox(
+                width: context.r(mobile: 240),
+                height: context.r(mobile: 240),
+                child: PrettyQrView.data(data: gift.qrToken),
+              ),
+            ),
+          ),
+        );
+
+      default: // redeemed
+        return const GuestRedeemedBox();
+    }
+  }
+}
+
+class _GuestHeader extends StatelessWidget {
+  final VoidCallback onMenuTap;
+  final VoidCallback onLogout;
+  const _GuestHeader({required this.onMenuTap, required this.onLogout});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: Colors.blue,
+      padding: GuestPadding.header(context),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: onMenuTap,
+            child: Container(
+              width: context.r(mobile: 44),
+              height: context.r(mobile: 44),
+              decoration: GuestDecorations.headerIconCircle(),
+              child: Icon(
+                GuestIcons.profile,
+                color: Colors.white,
+                size: context.sp(mobile: 24),
+              ),
+            ),
+          ),
+
+          Text('Guest Gift', style: GuestTextStyles.appBarTitle(context)),
+
+          Container(
+            width: context.r(mobile: 44),
+            height: context.r(mobile: 44),
+            decoration: GuestDecorations.headerIconCircle(),
+            child: IconButton(
+              onPressed: onLogout,
+              icon: Icon(
+                GuestIcons.logout,
+                color: Colors.white,
+                size: context.sp(mobile: 22),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
