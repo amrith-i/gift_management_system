@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  flutter_launcher_icons: ^0.13.1
  # DI
   get_it: ^9.2.1
   injectable: ^2.4.4
@@ -71,6 +71,14 @@ dev_dependencies:
   injectable_generator: ^2.4.4
   auto_route_generator: ^10.5.0
 
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/logo.jpg"
+  min_sdk_android: 21
+  adaptive_icon_background: "#FFFFFF" 
+  adaptive_icon_foreground: "assets/logo.jpg" 
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
@@ -87,6 +95,7 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/lottie/
+    - assets/logo.jpg
 
     - assets/icons/common/
   # Auth 
